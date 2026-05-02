@@ -2,6 +2,7 @@
 
 **Pine** is a compatibility layer enabling Windows, macOS, and Linux applications to run on Phenotype-native infrastructure. Like Wine translates Windows syscalls to POSIX, Pine translates applications into Phenotype execution environments.
 
+## PINE where PINE is an enhancemnt over WINE similar to Proton and Re-eng of Crossover  + Adaptation to Phenotype OS targets
 ## Status
 
 **PRE-ALPHA** — Foundation bootstrapped 2026-04-30.
