@@ -1,11 +1,14 @@
 version: 1
-trufflehog:
-  rules:
-    - rule_id: trufflehog:001
-      name: High Entropy Secret
-      description: Detects high-entropy strings that may be secrets
-      entropy_threshold: 4.5
-      exclude:
-        - extension: txt
-        - extension: md
-        - path: .git/
+roots:
+  - path: .
+    scan_depth: 4
+    exclude_paths:
+      - "*.lock"
+      - "**/node_modules/**"
+      - "**/__pycache__/**"
+      - "**/.venv/**"
+      - "**/target/**"
+      - "**/.git/**"
+    detectors:
+      - allowlist: false
+
