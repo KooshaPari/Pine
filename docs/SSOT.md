@@ -21,8 +21,8 @@
 
 ## Next Steps (DAG)
 1. [x] P0: State unification
-2. [x] P1: Tooling + governance (Justfile, LICENSE, CI)
-3. [x] P2: Hexagonal refactor (Cargo workspace with 5 crates)
+2. [x] P1: Tooling + governance
+3. [x] P2: Hexagonal refactor
 4. [ ] P3: Implement ELF loader in pine-loader
 5. [ ] P4: Implement syscall translation table in pine-syscall
 6. [ ] P5: Add nvms integration test
