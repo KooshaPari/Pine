@@ -1,0 +1,7 @@
+[package]
+name = "pine-syscall"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pine-core = { path = "../pine-core" }
