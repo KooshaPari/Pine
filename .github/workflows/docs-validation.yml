@@ -1,0 +1,39 @@
+name: Docs Validation
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate docs structure
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Verify required docs exist
+        run: |
+          set -euo pipefail
+          for f in README.md docs/ARCHITECTURE.md AGENTS.md; do
+            if [ -f "$f" ]; then
+              echo "✓ $f"
+            else
+              echo "✗ MISSING: $f"
+              exit 1
+            fi
+          done
+
+      - name: Check markdown links
+        uses: lycheeverse/lychee-action@f613c4a64e50d792e0b31ec34bbcbba12251c796
+        with:
+          args: --no-progress --exit-code README.md docs/ARCHITECTURE.md
+        continue-on-error: true
