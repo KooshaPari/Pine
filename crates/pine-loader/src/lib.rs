@@ -64,6 +64,19 @@ pub struct PeSection {
     pub characteristics: u32,
 }
 
+/// Parsed representation of a PE symbol.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PeSymbol {
+    /// Symbol name.
+    pub name: String,
+    /// Symbol address (RVA).
+    pub address: u64,
+    /// Symbol size.
+    pub size: u64,
+    /// Symbol kind (e.g., "export", "import").
+    pub kind: String,
+}
+
 /// Parsed representation of a PE binary.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PeBinary {
@@ -75,6 +88,55 @@ pub struct PeBinary {
     pub image_base: u64,
     /// Whether the PE is 64-bit.
     pub is_64_bit: bool,
+    /// Parsed symbols (exports and imports).
+    pub symbols: Vec<PeSymbol>,
+}
+
+/// Parsed representation of an ELF section.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ElfSection {
+    /// Section name.
+    pub name: String,
+    /// Virtual address.
+    pub address: u64,
+    /// Section size.
+    pub size: u64,
+    /// File offset.
+    pub offset: u64,
+    /// Section flags.
+    pub flags: u64,
+}
+
+/// Parsed representation of an ELF symbol.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ElfSymbol {
+    /// Symbol name.
+    pub name: String,
+    /// Symbol address.
+    pub address: u64,
+    /// Symbol size.
+    pub size: u64,
+    /// Symbol type (e.g., FUNC, OBJECT).
+    pub kind: String,
+}
+
+/// Parsed representation of an ELF binary.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ElfBinary {
+    /// Entry point virtual address.
+    pub entry_point: u64,
+    /// Parsed sections.
+    pub sections: Vec<ElfSection>,
+    /// Whether the ELF is 64-bit.
+    pub is_64_bit: bool,
+    /// Architecture (e_machine).
+    pub architecture: u16,
+    /// Parsed symbols.
+    pub symbols: Vec<ElfSymbol>,
+    /// Interpreter path (dynamic linker), if any.
+    pub interpreter: Option<String>,
+    /// Dynamic libraries, if any.
+    pub libraries: Vec<String>,
 }
 
 /// Parse a PE binary from raw bytes.
@@ -105,11 +167,97 @@ pub fn parse_pe(bytes: &[u8]) -> Result<PeBinary, LoaderError> {
         })
         .collect();
 
+    let mut symbols = Vec::new();
+    for export in &pe.exports {
+        symbols.push(PeSymbol {
+            name: export.name.unwrap_or("").to_string(),
+            address: export.rva as u64,
+            size: export.size as u64,
+            kind: "export".to_string(),
+        });
+    }
+    for import in &pe.imports {
+        symbols.push(PeSymbol {
+            name: import.name.to_string(),
+            address: import.rva as u64,
+            size: import.size as u64,
+            kind: "import".to_string(),
+        });
+    }
+
     Ok(PeBinary {
         entry_point,
         sections,
         image_base,
         is_64_bit,
+        symbols,
+    })
+}
+
+/// Parse an ELF binary from raw bytes.
+///
+/// Uses `goblin::elf::Elf` to parse headers, sections, symbols, and metadata.
+pub fn parse_elf(bytes: &[u8]) -> Result<ElfBinary, LoaderError> {
+    let elf = goblin::elf::Elf::parse(bytes)?;
+
+    let entry_point = elf.entry;
+    let is_64_bit = elf.is_64;
+    let architecture = elf.header.e_machine;
+
+    let sections = elf
+        .section_headers
+        .iter()
+        .map(|sh| {
+            let name = elf
+                .shdr_strtab
+                .get_at(sh.sh_name)
+                .unwrap_or("")
+                .to_string();
+            ElfSection {
+                name,
+                address: sh.sh_addr,
+                size: sh.sh_size,
+                offset: sh.sh_offset,
+                flags: sh.sh_flags,
+            }
+        })
+        .collect();
+
+    let symbols = elf
+        .syms
+        .iter()
+        .map(|sym| {
+            let name = elf.strtab.get_at(sym.st_name).unwrap_or("").to_string();
+            let kind = match sym.st_type() {
+                1 => "OBJECT",
+                2 => "FUNC",
+                3 => "SECTION",
+                4 => "FILE",
+                5 => "COMMON",
+                6 => "TLS",
+                _ => "UNKNOWN",
+            }
+            .to_string();
+            ElfSymbol {
+                name,
+                address: sym.st_value,
+                size: sym.st_size,
+                kind,
+            }
+        })
+        .collect();
+
+    let interpreter = elf.interpreter.map(|s| s.to_string());
+    let libraries = elf.libraries.iter().map(|&s| s.to_string()).collect();
+
+    Ok(ElfBinary {
+        entry_point,
+        sections,
+        is_64_bit,
+        architecture,
+        symbols,
+        interpreter,
+        libraries,
     })
 }
 
