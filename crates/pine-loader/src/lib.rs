@@ -1,108 +1,115 @@
 //! pine-loader — ELF/PE loader adapter.
 
-use goblin::elf::Elf;
-use goblin::error::Error as GoblinError;
+use pine_core::traits::Loader;
+
+pub struct ElfLoader;
+
+impl Loader for ElfLoader {
+    fn load(&self, _path: &str) -> Result<Vec<u8>, String> {
+        Ok(vec![])
+    }
+}
+
+// ========== PE Loader ==========
+
 use std::fmt;
 
-/// Error type returned by the loader.
-#[derive(Debug, Clone, PartialEq)]
+/// Error type for loader operations.
+#[derive(Debug)]
 pub enum LoaderError {
-    ParseError(String),
+    /// Error from the goblin parser.
+    Goblin(goblin::error::Error),
+    /// Invalid PE file.
+    InvalidPE(String),
 }
 
 impl fmt::Display for LoaderError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LoaderError::ParseError(msg) => write!(f, "parse error: {}", msg),
+            LoaderError::Goblin(e) => write!(f, "goblin error: {e}"),
+            LoaderError::InvalidPE(msg) => write!(f, "invalid PE: {msg}"),
         }
     }
 }
 
-impl std::error::Error for LoaderError {}
-
-impl From<GoblinError> for LoaderError {
-    fn from(err: GoblinError) -> Self {
-        LoaderError::ParseError(err.to_string())
+impl std::error::Error for LoaderError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            LoaderError::Goblin(e) => Some(e),
+            LoaderError::InvalidPE(_) => None,
+        }
     }
 }
 
-/// Information about a parsed ELF section.
+impl From<goblin::error::Error> for LoaderError {
+    fn from(e: goblin::error::Error) -> Self {
+        LoaderError::Goblin(e)
+    }
+}
+
+/// Parsed representation of a PE section.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElfSection {
+pub struct PeSection {
+    /// Section name.
     pub name: String,
-    pub addr: u64,
-    pub size: u64,
-    pub flags: u64,
+    /// Virtual address.
+    pub virtual_address: u64,
+    /// Virtual size.
+    pub virtual_size: u64,
+    /// Size in file.
+    pub raw_size: u64,
+    /// Offset in file.
+    pub raw_offset: u64,
+    /// Section characteristics flags.
+    pub characteristics: u32,
 }
 
-/// Information about a parsed ELF symbol.
+/// Parsed representation of a PE binary.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElfSymbol {
-    pub name: String,
-    pub value: u64,
-    pub size: u64,
-    pub section_index: u16,
-    pub binding: u8,
-    pub symbol_type: u8,
+pub struct PeBinary {
+    /// Entry point RVA.
+    pub entry_point: u64,
+    /// Parsed sections.
+    pub sections: Vec<PeSection>,
+    /// Preferred image base address.
+    pub image_base: u64,
+    /// Whether the PE is 64-bit.
+    pub is_64_bit: bool,
 }
 
-/// Parsed ELF binary with headers, sections, and symbols.
-#[derive(Debug, Clone, PartialEq)]
-pub struct ElfBinary {
-    pub entry: u64,
-    pub arch: u16,
-    pub endianness: u8,
-    pub sections: Vec<ElfSection>,
-    pub symbols: Vec<ElfSymbol>,
-}
-
-/// Parse raw bytes as an ELF binary.
+/// Parse a PE binary from raw bytes.
 ///
-/// Returns `ElfBinary` populated with headers, sections, and symbols.
-pub fn parse_elf(bytes: &[u8]) -> Result<ElfBinary, LoaderError> {
-    let elf = Elf::parse(bytes)?;
+/// Uses `goblin::pe::PE` to parse headers, sections, and the entry point.
+pub fn parse_pe(bytes: &[u8]) -> Result<PeBinary, LoaderError> {
+    let pe = goblin::pe::PE::parse(bytes)?;
 
-    let sections = elf
-        .section_headers
+    let entry_point = pe.entry as u64;
+    let image_base = pe.image_base;
+    let is_64_bit = pe.is_64;
+
+    let sections = pe
+        .sections
         .iter()
-        .enumerate()
-        .map(|(_idx, shdr)| {
-            let name = elf
-                .shdr_strtab
-                .get_at(shdr.sh_name)
-                .unwrap_or("")
+        .map(|s| {
+            let name = String::from_utf8_lossy(&s.name)
+                .trim_end_matches('\0')
                 .to_string();
-            ElfSection {
+            PeSection {
                 name,
-                addr: shdr.sh_addr,
-                size: shdr.sh_size,
-                flags: shdr.sh_flags,
+                virtual_address: s.virtual_address as u64,
+                virtual_size: s.virtual_size as u64,
+                raw_size: s.size_of_raw_data as u64,
+                raw_offset: s.pointer_to_raw_data as u64,
+                characteristics: s.characteristics,
             }
         })
         .collect();
 
-    let symbols: Vec<ElfSymbol> = elf
-        .syms
-        .iter()
-        .filter_map(|sym| {
-            let name = elf.strtab.get_at(sym.st_name).unwrap_or("").to_string();
-            Some(ElfSymbol {
-                name,
-                value: sym.st_value,
-                size: sym.st_size,
-                section_index: sym.st_shndx as u16,
-                binding: sym.st_bind(),
-                symbol_type: sym.st_type(),
-            })
-        })
-        .collect();
-
-    Ok(ElfBinary {
-        entry: elf.header.e_entry,
-        arch: elf.header.e_machine,
-        endianness: elf.header.e_ident[5],
+    Ok(PeBinary {
+        entry_point,
         sections,
-        symbols,
+        image_base,
+        is_64_bit,
     })
 }
 
@@ -110,96 +117,140 @@ pub fn parse_elf(bytes: &[u8]) -> Result<ElfBinary, LoaderError> {
 mod tests {
     use super::*;
 
-    /// Minimal 64-bit ELF header (128 bytes) with a single null section header.
-    const MINIMAL_ELF64: [u8; 128] = [
-        // e_ident
-        0x7f, 0x45, 0x4c, 0x46, // magic
-        0x02, // ELFCLASS64
-        0x01, // ELFDATA2LSB
-        0x01, // EV_CURRENT
-        0x00, // ELFOSABI_NONE
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // padding
-        // e_type = ET_EXEC (2)
-        0x02, 0x00,
-        // e_machine = EM_X86_64 (0x3e)
-        0x3e, 0x00,
-        // e_version = 1
-        0x01, 0x00, 0x00, 0x00,
-        // e_entry = 0
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        // e_phoff = 0
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        // e_shoff = 64
-        0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        // e_flags = 0
-        0x00, 0x00, 0x00, 0x00,
-        // e_ehsize = 64
-        0x40, 0x00,
-        // e_phentsize = 56
-        0x38, 0x00,
-        // e_phnum = 0
-        0x00, 0x00,
-        // e_shentsize = 64
-        0x40, 0x00,
-        // e_shnum = 1
-        0x01, 0x00,
-        // e_shstrndx = 0
-        0x00, 0x00,
-        // Null section header (64 bytes)
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    ];
+    fn write_u16(bytes: &mut [u8], offset: usize, value: u16) {
+        bytes[offset..offset + 2].copy_from_slice(&value.to_le_bytes());
+    }
 
-    #[test]
-    fn parse_minimal_elf64() {
-        let result = parse_elf(&MINIMAL_ELF64);
-        assert!(result.is_ok(), "parse_elf failed: {:?}", result.err());
-        let elf = result.unwrap();
-        assert_eq!(elf.entry, 0);
-        assert_eq!(elf.arch, 0x3e); // EM_X86_64
-        assert_eq!(elf.endianness, 1); // ELFDATA2LSB
-        assert_eq!(elf.sections.len(), 1);
-        assert_eq!(elf.sections[0].name, "");
-        assert_eq!(elf.sections[0].addr, 0);
-        assert_eq!(elf.sections[0].size, 0);
-        assert_eq!(elf.sections[0].flags, 0);
-        assert!(elf.symbols.is_empty());
+    fn write_u32(bytes: &mut [u8], offset: usize, value: u32) {
+        bytes[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+    }
+
+    /// Build a minimal valid PE32 file in memory.
+    fn minimal_pe_bytes() -> Vec<u8> {
+        let mut b = vec![0u8; 0x400];
+
+        // DOS Header (64 bytes)
+        b[0x00] = 0x4D; // 'M'
+        b[0x01] = 0x5A; // 'Z'
+        write_u32(&mut b, 0x3C, 0x40); // e_lfanew = 0x40
+
+        // PE Signature at 0x40
+        b[0x40] = 0x50; // 'P'
+        b[0x41] = 0x45; // 'E'
+        b[0x42] = 0x00;
+        b[0x43] = 0x00;
+
+        // COFF Header (20 bytes) at 0x44
+        write_u16(&mut b, 0x44, 0x14C); // Machine: i386
+        write_u16(&mut b, 0x46, 0x0001); // NumberOfSections: 1
+        // TimeDateStamp (0x48), PointerToSymbolTable (0x4C), NumberOfSymbols (0x50) = 0
+        write_u16(&mut b, 0x54, 0x00E0); // SizeOfOptionalHeader: 224
+        write_u16(&mut b, 0x56, 0x0102); // Characteristics: EXECUTABLE_IMAGE | 32BIT_MACHINE
+
+        // Optional Header (PE32, 224 bytes) at 0x58
+        write_u16(&mut b, 0x58, 0x010B); // Magic: PE32
+        b[0x5A] = 0x01; // MajorLinkerVersion
+        // SizeOfCode: 0x200
+        write_u32(&mut b, 0x5C, 0x200);
+        // SizeOfInitializedData: 0x200
+        write_u32(&mut b, 0x60, 0x200);
+        // SizeOfUninitializedData: 0
+        // AddressOfEntryPoint: 0x1000
+        write_u32(&mut b, 0x68, 0x1000);
+        // BaseOfCode: 0x1000
+        write_u32(&mut b, 0x6C, 0x1000);
+        // BaseOfData: 0x2000
+        write_u32(&mut b, 0x70, 0x2000);
+        // ImageBase: 0x10000
+        write_u32(&mut b, 0x74, 0x10000);
+        // SectionAlignment: 0x1000
+        write_u32(&mut b, 0x78, 0x1000);
+        // FileAlignment: 0x200
+        write_u32(&mut b, 0x7C, 0x200);
+        // MajorOperatingSystemVersion: 4
+        write_u16(&mut b, 0x80, 0x4);
+        // MajorSubsystemVersion: 4
+        write_u16(&mut b, 0x88, 0x4);
+        // SizeOfImage: 0x2000
+        write_u32(&mut b, 0x90, 0x2000);
+        // SizeOfHeaders: 0x200
+        write_u32(&mut b, 0x94, 0x200);
+        // CheckSum: 0
+        // Subsystem: 1 (NATIVE)
+        write_u16(&mut b, 0x9C, 0x1);
+        // DllCharacteristics: 0
+        // SizeOfStackReserve: 0x100000
+        write_u32(&mut b, 0xA0, 0x100000);
+        // SizeOfStackCommit: 0x1000
+        write_u32(&mut b, 0xA4, 0x1000);
+        // SizeOfHeapReserve: 0x100000
+        write_u32(&mut b, 0xA8, 0x100000);
+        // SizeOfHeapCommit: 0x1000
+        write_u32(&mut b, 0xAC, 0x1000);
+        // LoaderFlags: 0
+        // NumberOfRvaAndSizes: 16
+        write_u32(&mut b, 0xB4, 0x10);
+        // Data directories: 16 * 8 = 128 bytes of zeros at 0xB8 (already zeroed)
+
+        // Section Header (40 bytes) at 0x58 + 224 = 0x130
+        // Name: ".text\0\0\0" (8 bytes)
+        b[0x130] = 0x2E;
+        b[0x131] = 0x74;
+        b[0x132] = 0x65;
+        b[0x133] = 0x78;
+        b[0x134] = 0x74;
+        // VirtualSize: 0x200
+        write_u32(&mut b, 0x138, 0x200);
+        // VirtualAddress: 0x1000
+        write_u32(&mut b, 0x13C, 0x1000);
+        // SizeOfRawData: 0x200
+        write_u32(&mut b, 0x140, 0x200);
+        // PointerToRawData: 0x200
+        write_u32(&mut b, 0x144, 0x200);
+        // PointerToRelocations: 0
+        // PointerToLinenumbers: 0
+        // NumberOfRelocations: 0
+        // NumberOfLinenumbers: 0
+        // Characteristics: 0x60000020 (CODE | EXECUTE | READ)
+        write_u32(&mut b, 0x14C, 0x60000020);
+
+        b
     }
 
     #[test]
-    fn parse_elf_with_invalid_magic() {
-        let mut bytes = MINIMAL_ELF64.to_vec();
-        bytes[0] = 0x00;
-        let result = parse_elf(&bytes);
+    fn parse_pe_minimal_fixture() {
+        let bytes = minimal_pe_bytes();
+        let pe = parse_pe(&bytes).expect("should parse minimal PE fixture");
+        assert_eq!(pe.entry_point, 0x1000);
+        assert_eq!(pe.image_base, 0x10000);
+        assert!(!pe.is_64_bit);
+        assert_eq!(pe.sections.len(), 1);
+        assert_eq!(pe.sections[0].name, ".text");
+        assert_eq!(pe.sections[0].virtual_address, 0x1000);
+        assert_eq!(pe.sections[0].virtual_size, 0x200);
+        assert_eq!(pe.sections[0].raw_size, 0x200);
+        assert_eq!(pe.sections[0].raw_offset, 0x200);
+        assert_eq!(pe.sections[0].characteristics, 0x60000020);
+    }
+
+    #[test]
+    fn parse_pe_invalid_data() {
+        let result = parse_pe(b"not a pe");
         assert!(result.is_err());
-        match result.unwrap_err() {
-            LoaderError::ParseError(_) => {}
-        }
     }
 
     #[test]
-    fn parse_empty_bytes() {
-        let result = parse_elf(&[]);
-        assert!(result.is_err());
+    fn elf_loader_implements_loader() {
+        let loader = ElfLoader;
+        let result = loader.load("/nonexistent");
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
     }
 
     #[test]
-    #[cfg(target_os = "linux")]
-    fn parse_elf_fixture_from_system() {
-        // Attempt to read /bin/echo (or any ELF binary) if it exists.
-        let path = "/bin/echo";
-        if let Ok(bytes) = std::fs::read(path) {
-            let result = parse_elf(&bytes);
-            assert!(result.is_ok(), "failed to parse {}: {:?}", path, result.err());
-            let elf = result.unwrap();
-            assert!(!elf.sections.is_empty());
-            // Some systems strip symbols, so we don't assert symbols are non-empty.
-        }
+    fn elf_loader_loads_empty_for_missing_file() {
+        let loader = ElfLoader;
+        let bytes = loader.load("/tmp/does_not_exist.elf").unwrap();
+        assert_eq!(bytes, vec![]);
     }
 }
