@@ -1,5 +1,9 @@
 //! pine-syscall — Syscall translation layer.
 
+pub mod linux;
+pub mod plugin;
+pub mod windows;
+
 use std::collections::HashMap;
 use std::fmt;
 
@@ -365,6 +369,7 @@ pub trait SyscallTranslator {
 }
 
 /// x86_64 Linux syscall translator backed by a lookup table.
+#[derive(Debug, Clone)]
 pub struct X86_64SyscallTranslator {
     table: HashMap<u64, SyscallName>,
 }
