@@ -12,8 +12,8 @@ impl Loader for ElfLoader {
 
 #[cfg(test)]
 mod tests {
-    use pine_core::traits::Loader;
     use crate::ElfLoader;
+    use pine_core::traits::Loader;
 
     #[test]
     fn elf_loader_implements_loader() {

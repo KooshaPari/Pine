@@ -7,3 +7,9 @@ impl CompatibilityLayer {
         Self
     }
 }
+
+impl Default for CompatibilityLayer {
+    fn default() -> Self {
+        Self::new()
+    }
+}

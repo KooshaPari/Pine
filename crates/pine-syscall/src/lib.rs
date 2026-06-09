@@ -12,8 +12,8 @@ impl SyscallHandler for LinuxSyscallHandler {
 
 #[cfg(test)]
 mod tests {
-    use pine_core::traits::SyscallHandler;
     use crate::LinuxSyscallHandler;
+    use pine_core::traits::SyscallHandler;
 
     #[test]
     fn linux_handler_returns_zero_for_unknown_syscall() {

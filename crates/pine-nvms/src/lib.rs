@@ -7,3 +7,9 @@ impl NvmsRuntime {
         Self
     }
 }
+
+impl Default for NvmsRuntime {
+    fn default() -> Self {
+        Self::new()
+    }
+}
