@@ -40,3 +40,7 @@ coverage/
 *.tmp
 *.bak
 *.orig
+.grade-reports/
+grade.sh
+just-grade.snippet
+lefthook.yml
