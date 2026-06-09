@@ -192,27 +192,27 @@ mod tests {
         write_u32(&mut b, 0xB4, 0x10);
         // Data directories: 16 * 8 = 128 bytes of zeros at 0xB8 (already zeroed)
 
-        // Section Header (40 bytes) at 0x58 + 224 = 0x130
+        // Section Header (40 bytes) at 0x58 + 224 = 0x138
         // Name: ".text\0\0\0" (8 bytes)
-        b[0x130] = 0x2E;
-        b[0x131] = 0x74;
-        b[0x132] = 0x65;
-        b[0x133] = 0x78;
-        b[0x134] = 0x74;
+        b[0x138] = 0x2E;
+        b[0x139] = 0x74;
+        b[0x13A] = 0x65;
+        b[0x13B] = 0x78;
+        b[0x13C] = 0x74;
         // VirtualSize: 0x200
-        write_u32(&mut b, 0x138, 0x200);
-        // VirtualAddress: 0x1000
-        write_u32(&mut b, 0x13C, 0x1000);
-        // SizeOfRawData: 0x200
         write_u32(&mut b, 0x140, 0x200);
+        // VirtualAddress: 0x1000
+        write_u32(&mut b, 0x144, 0x1000);
+        // SizeOfRawData: 0x200
+        write_u32(&mut b, 0x148, 0x200);
         // PointerToRawData: 0x200
-        write_u32(&mut b, 0x144, 0x200);
+        write_u32(&mut b, 0x14C, 0x200);
         // PointerToRelocations: 0
         // PointerToLinenumbers: 0
         // NumberOfRelocations: 0
         // NumberOfLinenumbers: 0
         // Characteristics: 0x60000020 (CODE | EXECUTE | READ)
-        write_u32(&mut b, 0x14C, 0x60000020);
+        write_u32(&mut b, 0x15C, 0x60000020);
 
         b
     }
