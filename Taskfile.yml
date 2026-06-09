@@ -50,18 +50,18 @@ tasks:
     desc: Build mdbook docs
     dir: docs
     cmds:
-      - mdbook build 2>/dev/null || echo "mdbook not installed; run: cargo install mdbook"
+      - "mdbook build 2>/dev/null || echo 'mdbook not installed; run: cargo install mdbook'"
 
   docs:serve:
     desc: Serve docs locally
     dir: docs
     cmds:
-      - mdbook serve 2>/dev/null || echo "mdbook not installed"
+      - "mdbook serve 2>/dev/null || echo 'mdbook not installed'"
 
   lint:md:
     desc: Lint markdown files
     cmds:
-      - npx markdownlint-cli "docs/**/*.md" 2>/dev/null || echo "markdownlint not installed"
+      - "npx markdownlint-cli 'docs/**/*.md' 2>/dev/null || echo 'markdownlint not installed'"
 
   ci:
     desc: Run the full CI pipeline locally

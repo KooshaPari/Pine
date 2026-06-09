@@ -1,7 +1,7 @@
 //! pine-core — Domain types and shared interfaces for Pine.
 
-pub mod types;
 pub mod traits;
+pub mod types;
 
 #[cfg(test)]
 mod tests {
