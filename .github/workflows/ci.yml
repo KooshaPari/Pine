@@ -34,6 +34,31 @@ jobs:
       - name: Audit
         run: cargo audit || echo "cargo-audit not installed; skipping"
 
+  cross-compile:
+    name: Cross Compile (${{ matrix.target }})
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - wasm32-unknown-unknown
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099e1c9e3b
+      - name: Install cross
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+      - name: Build (cross)
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cross build --workspace --target ${{ matrix.target }}
+      - name: Build (cargo)
+        if: matrix.target == 'wasm32-unknown-unknown'
+        run: cargo build --workspace --target ${{ matrix.target }}
+
   docs:
     name: Docs
     runs-on: ubuntu-24.04
