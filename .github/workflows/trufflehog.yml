@@ -23,3 +23,5 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --only-verified --fail --no-update --exclude-paths ./.trufflehogignore
+
+<!-- ci-refresh: 2026-06-10T07:24:29Z -->
