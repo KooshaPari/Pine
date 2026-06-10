@@ -245,3 +245,4 @@ rest.
 - `goblin`: Binary parsing (PE/ELF/Mach-O)
 - `nvms`: MicroVM isolation layer
 - Rust stable toolchain (MSRV TBD)
+<!-- ci-refresh: 2026-06-10T07:21:50Z -->
