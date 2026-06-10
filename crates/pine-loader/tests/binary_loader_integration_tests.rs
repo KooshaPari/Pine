@@ -3,7 +3,7 @@ use std::fs;
 use std::path::PathBuf;
 
 fn temp_dir() -> PathBuf {
-    PathBuf::from(std::env::temp_dir())
+    std::env::temp_dir()
 }
 
 fn write_u16(bytes: &mut [u8], offset: usize, value: u16) {
@@ -139,7 +139,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
     b[0x04] = 2; // ELFCLASS64
     b[0x05] = 1; // ELFDATA2LSB
     b[0x06] = 1; // EV_CURRENT
-    // e_ident[7..16] = 0
+                 // e_ident[7..16] = 0
 
     write_u16(&mut b, 0x10, 2); // e_type: ET_EXEC
     write_u16(&mut b, 0x12, 62); // e_machine: EM_X86_64
@@ -180,7 +180,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
     // .symtab at 0x400 (2 symbols: NULL + _start)
     let symtab_start = 0x400;
     // Symbol 0: NULL
-    write_u32(&mut b, symtab_start + 0, 0); // st_name
+    write_u32(&mut b, symtab_start, 0); // st_name
     b[symtab_start + 4] = 0; // st_info
     b[symtab_start + 5] = 0; // st_other
     write_u16(&mut b, symtab_start + 6, 0); // st_shndx
@@ -202,7 +202,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
 
     // Section 1: .text
     let sh1 = sh_start + 64;
-    write_u32(&mut b, sh1 + 0, 1); // sh_name
+    write_u32(&mut b, sh1, 1); // sh_name
     write_u32(&mut b, sh1 + 4, 1); // sh_type: SHT_PROGBITS
     write_u64(&mut b, sh1 + 8, 6); // sh_flags: SHF_ALLOC | SHF_EXECINSTR
     write_u64(&mut b, sh1 + 16, 0x1000); // sh_addr
@@ -215,7 +215,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
 
     // Section 2: .symtab
     let sh2 = sh_start + 128;
-    write_u32(&mut b, sh2 + 0, 7); // sh_name
+    write_u32(&mut b, sh2, 7); // sh_name
     write_u32(&mut b, sh2 + 4, 2); // sh_type: SHT_SYMTAB
     write_u64(&mut b, sh2 + 8, 0); // sh_flags
     write_u64(&mut b, sh2 + 16, 0); // sh_addr
@@ -228,7 +228,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
 
     // Section 3: .strtab
     let sh3 = sh_start + 192;
-    write_u32(&mut b, sh3 + 0, 15); // sh_name
+    write_u32(&mut b, sh3, 15); // sh_name
     write_u32(&mut b, sh3 + 4, 3); // sh_type: SHT_STRTAB
     write_u64(&mut b, sh3 + 8, 0); // sh_flags
     write_u64(&mut b, sh3 + 16, 0); // sh_addr
@@ -241,7 +241,7 @@ fn minimal_elf64_bytes() -> Vec<u8> {
 
     // Section 4: .shstrtab
     let sh4 = sh_start + 256;
-    write_u32(&mut b, sh4 + 0, 23); // sh_name
+    write_u32(&mut b, sh4, 23); // sh_name
     write_u32(&mut b, sh4 + 4, 3); // sh_type: SHT_STRTAB
     write_u64(&mut b, sh4 + 8, 0); // sh_flags
     write_u64(&mut b, sh4 + 16, 0); // sh_addr

@@ -303,35 +303,59 @@ mod tests {
     fn linux_translator_constants_match_table() {
         let translator = LinuxSyscallTranslator::new();
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::READ, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::READ, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Read
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::WRITE, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::WRITE, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Write
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::OPEN, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::OPEN, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Open
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::CLOSE, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::CLOSE, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Close
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::MMAP, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::MMAP, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Mmap
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::OPENAT, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::OPENAT, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Openat
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::GETRANDOM, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::GETRANDOM, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::Getrandom
         );
         assert_eq!(
-            translator.translate(LinuxSyscallTranslator::EXIT_GROUP, [0; 6]).unwrap().name,
+            translator
+                .translate(LinuxSyscallTranslator::EXIT_GROUP, [0; 6])
+                .unwrap()
+                .name,
             SyscallName::ExitGroup
         );
     }

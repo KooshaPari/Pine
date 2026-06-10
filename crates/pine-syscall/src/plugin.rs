@@ -267,7 +267,10 @@ impl PluginRegistry {
 
     /// Look up a plugin by name.
     pub fn find_plugin(&self, name: &str) -> Option<&dyn SyscallTranslatorPlugin> {
-        self.plugins.iter().find(|p| p.name() == name).map(|p| p.as_ref())
+        self.plugins
+            .iter()
+            .find(|p| p.name() == name)
+            .map(|p| p.as_ref())
     }
 }
 
@@ -300,6 +303,12 @@ impl PluginRegistry {
 /// arbitrary code. The caller must ensure that the library comes from a
 /// trusted source.
 pub struct PluginLoader;
+
+impl Default for PluginLoader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl PluginLoader {
     /// Create a new plugin loader.
@@ -338,14 +347,12 @@ impl PluginLoader {
             return Err(PluginLoaderError::InvalidPath(path.to_path_buf()));
         }
 
-        let lib = libloading::Library::new(path).map_err(|e| {
-            PluginLoaderError::LibraryLoadFailed(format!("{e}"))
-        })?;
+        let lib = libloading::Library::new(path)
+            .map_err(|e| PluginLoaderError::LibraryLoadFailed(format!("{e}")))?;
 
-        let create: libloading::Symbol<unsafe extern "C" fn() -> *mut std::ffi::c_void> =
-            lib.get(b"pine_plugin_create\0").map_err(|_| {
-                PluginLoaderError::SymbolNotFound("pine_plugin_create".to_string())
-            })?;
+        let create: libloading::Symbol<unsafe extern "C" fn() -> *mut std::ffi::c_void> = lib
+            .get(b"pine_plugin_create\0")
+            .map_err(|_| PluginLoaderError::SymbolNotFound("pine_plugin_create".to_string()))?;
 
         let ptr = create();
         if ptr.is_null() {
@@ -372,15 +379,13 @@ impl PluginLoader {
         &self,
         dir: &Path,
     ) -> Result<Vec<Box<dyn SyscallTranslatorPlugin>>, PluginLoaderError> {
-        let entries = std::fs::read_dir(dir).map_err(|e| {
-            PluginLoaderError::DirectoryReadFailed(format!("{e}"))
-        })?;
+        let entries = std::fs::read_dir(dir)
+            .map_err(|e| PluginLoaderError::DirectoryReadFailed(format!("{e}")))?;
 
         let mut plugins = Vec::new();
         for entry in entries {
-            let entry = entry.map_err(|e| {
-                PluginLoaderError::DirectoryReadFailed(format!("{e}"))
-            })?;
+            let entry =
+                entry.map_err(|e| PluginLoaderError::DirectoryReadFailed(format!("{e}")))?;
             let path = entry.path();
             if is_plugin_library(&path) {
                 match self.load_dynamic(&path) {
@@ -430,7 +435,7 @@ fn is_plugin_library(path: &Path) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{SyscallName, SyscallResult, SyscallError};
+    use crate::{SyscallError, SyscallName, SyscallResult};
 
     struct TestPlugin {
         name: String,
@@ -448,7 +453,11 @@ mod tests {
         fn supported_syscalls(&self) -> &[SyscallName] {
             &self.syscalls
         }
-        fn translate(&self, syscall_num: u64, args: [u64; 6]) -> Result<SyscallResult, SyscallError> {
+        fn translate(
+            &self,
+            syscall_num: u64,
+            args: [u64; 6],
+        ) -> Result<SyscallResult, SyscallError> {
             if let Some(&name) = self.syscalls.first() {
                 Ok(SyscallResult {
                     name,
@@ -540,11 +549,14 @@ mod tests {
     fn plugin_loader_register_static() {
         let loader = PluginLoader::new();
         let mut registry = PluginRegistry::new();
-        loader.register_static(&mut registry, TestPlugin {
-            name: "static".to_string(),
-            version: "1.0.0".to_string(),
-            syscalls: vec![SyscallName::Open],
-        });
+        loader.register_static(
+            &mut registry,
+            TestPlugin {
+                name: "static".to_string(),
+                version: "1.0.0".to_string(),
+                syscalls: vec![SyscallName::Open],
+            },
+        );
         assert_eq!(registry.len(), 1);
     }
 

@@ -151,7 +151,11 @@ pub struct WindowsSyscallResult {
 
 /// Trait for translating raw Windows syscall numbers into structured results.
 pub trait WindowsSyscallTranslator {
-    fn translate(&self, syscall_num: u32, args: [u64; 6]) -> Result<WindowsSyscallResult, WindowsSyscallError>;
+    fn translate(
+        &self,
+        syscall_num: u32,
+        args: [u64; 6],
+    ) -> Result<WindowsSyscallResult, WindowsSyscallError>;
 }
 
 /// Windows NT syscall translator backed by a lookup table.
@@ -343,7 +347,11 @@ impl Default for WindowsNtSyscallTranslator {
 }
 
 impl WindowsSyscallTranslator for WindowsNtSyscallTranslator {
-    fn translate(&self, syscall_num: u32, args: [u64; 6]) -> Result<WindowsSyscallResult, WindowsSyscallError> {
+    fn translate(
+        &self,
+        syscall_num: u32,
+        args: [u64; 6],
+    ) -> Result<WindowsSyscallResult, WindowsSyscallError> {
         match self.table.get(&syscall_num) {
             Some(&name) => Ok(WindowsSyscallResult {
                 name,
@@ -366,7 +374,10 @@ mod tests {
     fn windows_translator_translates_nt_create_file() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_CREATE_FILE, [1, 2, 3, 4, 5, 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_CREATE_FILE,
+                [1, 2, 3, 4, 5, 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtCreateFile);
         assert_eq!(result.number, 0x55);
@@ -416,7 +427,10 @@ mod tests {
     fn windows_translator_translates_nt_allocate_virtual_memory() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_ALLOCATE_VIRTUAL_MEMORY, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_ALLOCATE_VIRTUAL_MEMORY,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtAllocateVirtualMemory);
     }
@@ -434,7 +448,10 @@ mod tests {
     fn windows_translator_translates_nt_protect_virtual_memory() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_PROTECT_VIRTUAL_MEMORY, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_PROTECT_VIRTUAL_MEMORY,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtProtectVirtualMemory);
     }
@@ -461,7 +478,10 @@ mod tests {
     fn windows_translator_translates_nt_query_system_information() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_QUERY_SYSTEM_INFORMATION, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_QUERY_SYSTEM_INFORMATION,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtQuerySystemInformation);
     }
@@ -470,7 +490,10 @@ mod tests {
     fn windows_translator_translates_nt_query_information_process() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_PROCESS, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_PROCESS,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtQueryInformationProcess);
     }
@@ -479,7 +502,10 @@ mod tests {
     fn windows_translator_translates_nt_wait_for_single_object() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_WAIT_FOR_SINGLE_OBJECT, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_WAIT_FOR_SINGLE_OBJECT,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtWaitForSingleObject);
     }
@@ -488,7 +514,10 @@ mod tests {
     fn windows_translator_translates_nt_wait_for_multiple_objects() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_WAIT_FOR_MULTIPLE_OBJECTS, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_WAIT_FOR_MULTIPLE_OBJECTS,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtWaitForMultipleObjects);
     }
@@ -659,7 +688,10 @@ mod tests {
     fn windows_translator_translates_nt_device_io_control_file() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_DEVICE_IO_CONTROL_FILE, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_DEVICE_IO_CONTROL_FILE,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtDeviceIoControlFile);
     }
@@ -695,7 +727,10 @@ mod tests {
     fn windows_translator_translates_nt_query_information_file() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_FILE, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_FILE,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtQueryInformationFile);
     }
@@ -776,7 +811,10 @@ mod tests {
     fn windows_translator_translates_nt_query_information_thread() {
         let translator = WindowsNtSyscallTranslator::new();
         let result = translator
-            .translate(WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_THREAD, [0; 6])
+            .translate(
+                WindowsNtSyscallTranslator::NT_QUERY_INFORMATION_THREAD,
+                [0; 6],
+            )
             .unwrap();
         assert_eq!(result.name, WindowsSyscallName::NtQueryInformationThread);
     }

@@ -1012,7 +1012,10 @@ impl X86_64SyscallTranslator {
 
     /// Look up the syscall number for a given name.
     pub fn lookup_number(&self, name: SyscallName) -> Option<u64> {
-        self.table.iter().find(|(_, n)| **n == name).map(|(num, _)| *num)
+        self.table
+            .iter()
+            .find(|(_, n)| **n == name)
+            .map(|(num, _)| *num)
     }
 }
 
@@ -1140,30 +1143,72 @@ mod tests {
     #[test]
     fn x86_64_translator_translates_socket_and_network() {
         let translator = X86_64SyscallTranslator::new();
-        assert_eq!(translator.translate(41, [0; 6]).unwrap().name, SyscallName::Socket);
-        assert_eq!(translator.translate(42, [0; 6]).unwrap().name, SyscallName::Connect);
-        assert_eq!(translator.translate(43, [0; 6]).unwrap().name, SyscallName::Accept);
-        assert_eq!(translator.translate(49, [0; 6]).unwrap().name, SyscallName::Bind);
-        assert_eq!(translator.translate(50, [0; 6]).unwrap().name, SyscallName::Listen);
+        assert_eq!(
+            translator.translate(41, [0; 6]).unwrap().name,
+            SyscallName::Socket
+        );
+        assert_eq!(
+            translator.translate(42, [0; 6]).unwrap().name,
+            SyscallName::Connect
+        );
+        assert_eq!(
+            translator.translate(43, [0; 6]).unwrap().name,
+            SyscallName::Accept
+        );
+        assert_eq!(
+            translator.translate(49, [0; 6]).unwrap().name,
+            SyscallName::Bind
+        );
+        assert_eq!(
+            translator.translate(50, [0; 6]).unwrap().name,
+            SyscallName::Listen
+        );
     }
 
     #[test]
     fn x86_64_translator_translates_process_and_signal() {
         let translator = X86_64SyscallTranslator::new();
-        assert_eq!(translator.translate(39, [0; 6]).unwrap().name, SyscallName::Getpid);
-        assert_eq!(translator.translate(56, [0; 6]).unwrap().name, SyscallName::Clone);
-        assert_eq!(translator.translate(59, [0; 6]).unwrap().name, SyscallName::Execve);
-        assert_eq!(translator.translate(60, [0; 6]).unwrap().name, SyscallName::Exit);
-        assert_eq!(translator.translate(62, [0; 6]).unwrap().name, SyscallName::Kill);
+        assert_eq!(
+            translator.translate(39, [0; 6]).unwrap().name,
+            SyscallName::Getpid
+        );
+        assert_eq!(
+            translator.translate(56, [0; 6]).unwrap().name,
+            SyscallName::Clone
+        );
+        assert_eq!(
+            translator.translate(59, [0; 6]).unwrap().name,
+            SyscallName::Execve
+        );
+        assert_eq!(
+            translator.translate(60, [0; 6]).unwrap().name,
+            SyscallName::Exit
+        );
+        assert_eq!(
+            translator.translate(62, [0; 6]).unwrap().name,
+            SyscallName::Kill
+        );
     }
 
     #[test]
     fn x86_64_translator_translates_newer_at_syscalls() {
         let translator = X86_64SyscallTranslator::new();
-        assert_eq!(translator.translate(257, [0; 6]).unwrap().name, SyscallName::Openat);
-        assert_eq!(translator.translate(263, [0; 6]).unwrap().name, SyscallName::Unlinkat);
-        assert_eq!(translator.translate(264, [0; 6]).unwrap().name, SyscallName::Renameat);
-        assert_eq!(translator.translate(316, [0; 6]).unwrap().name, SyscallName::Renameat2);
+        assert_eq!(
+            translator.translate(257, [0; 6]).unwrap().name,
+            SyscallName::Openat
+        );
+        assert_eq!(
+            translator.translate(263, [0; 6]).unwrap().name,
+            SyscallName::Unlinkat
+        );
+        assert_eq!(
+            translator.translate(264, [0; 6]).unwrap().name,
+            SyscallName::Renameat
+        );
+        assert_eq!(
+            translator.translate(316, [0; 6]).unwrap().name,
+            SyscallName::Renameat2
+        );
     }
 
     #[test]

@@ -240,11 +240,7 @@ pub fn parse_elf(bytes: &[u8]) -> Result<ElfBinary, LoaderError> {
         .section_headers
         .iter()
         .map(|sh| {
-            let name = elf
-                .shdr_strtab
-                .get_at(sh.sh_name)
-                .unwrap_or("")
-                .to_string();
+            let name = elf.shdr_strtab.get_at(sh.sh_name).unwrap_or("").to_string();
             ElfSection {
                 name,
                 address: sh.sh_addr,
@@ -323,14 +319,14 @@ mod tests {
         // COFF Header (20 bytes) at 0x44
         write_u16(&mut b, 0x44, 0x14C); // Machine: i386
         write_u16(&mut b, 0x46, 0x0001); // NumberOfSections: 1
-        // TimeDateStamp (0x48), PointerToSymbolTable (0x4C), NumberOfSymbols (0x50) = 0
+                                         // TimeDateStamp (0x48), PointerToSymbolTable (0x4C), NumberOfSymbols (0x50) = 0
         write_u16(&mut b, 0x54, 0x00E0); // SizeOfOptionalHeader: 224
         write_u16(&mut b, 0x56, 0x0102); // Characteristics: EXECUTABLE_IMAGE | 32BIT_MACHINE
 
         // Optional Header (PE32, 224 bytes) at 0x58
         write_u16(&mut b, 0x58, 0x010B); // Magic: PE32
         b[0x5A] = 0x01; // MajorLinkerVersion
-        // SizeOfCode: 0x200
+                        // SizeOfCode: 0x200
         write_u32(&mut b, 0x5C, 0x200);
         // SizeOfInitializedData: 0x200
         write_u32(&mut b, 0x60, 0x200);

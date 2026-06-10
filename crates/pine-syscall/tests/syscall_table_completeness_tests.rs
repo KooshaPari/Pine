@@ -590,10 +590,7 @@ fn all_top_100_common_syscalls_present() {
                 }
             }
             None => {
-                missing.push(format!(
-                    "number {} ({:?}) missing",
-                    number, expected_name
-                ));
+                missing.push(format!("number {} ({:?}) missing", number, expected_name));
             }
         }
     }
