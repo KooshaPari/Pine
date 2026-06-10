@@ -43,3 +43,4 @@ Phenotype needs application compatibility. Users will want to run Windows apps (
 - Core: Rust (translation layer, syscall emulation)
 - Runtime: Go (orchestration, lifecycle management)
 - Agents: Python/TypeScript (testing harness)
+<!-- ci-refresh: 2026-06-10T09:24:35Z -->
