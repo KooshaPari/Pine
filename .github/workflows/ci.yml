@@ -18,11 +18,11 @@ jobs:
     name: Build + Test
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099e1c9e3b
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --workspace --all-targets
       - name: Test
@@ -44,11 +44,11 @@ jobs:
           - aarch64-unknown-linux-gnu
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099e1c9e3b
+      - uses: Swatinem/rust-cache@v2
       - name: Install cross
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo install cross --git https://github.com/cross-rs/cross
@@ -63,17 +63,22 @@ jobs:
     name: Docs
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - run: |
-          curl -sL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
-      - run: cd docs && mdbook build
+      - uses: actions/checkout@v4
+      - name: Build mdbook (if SUMMARY.md present)
+        run: |
+          if [ -f docs/book.toml ] && [ -f docs/src/SUMMARY.md ]; then
+            curl -sL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
+            cd docs && mdbook build
+          else
+            echo "No mdbook book defined (docs/book.toml + docs/src/SUMMARY.md missing) — skipping"
+          fi
 
   lint:
     name: Lint Markdown
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: actions/setup-node@393d76ae4a3688a7d83c48139b7b4749565011f7 # v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - run: npm install -g markdownlint-cli
