@@ -15,7 +15,9 @@ use std::fmt;
 /// Error returned when a Windows syscall translation fails.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WindowsSyscallError {
+    /// `UnknownSyscall`
     UnknownSyscall(u32),
+    /// `InvalidArgument`
     InvalidArgument,
 }
 
@@ -35,56 +37,107 @@ impl std::error::Error for WindowsSyscallError {}
 /// Named identifier for a Windows NT syscall.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WindowsSyscallName {
+    /// `NtAccessCheck`
     NtAccessCheck,
+    /// `NtAllocateVirtualMemory`
     NtAllocateVirtualMemory,
+    /// `NtClose`
     NtClose,
+    /// `NtCreateEvent`
     NtCreateEvent,
+    /// `NtCreateFile`
     NtCreateFile,
+    /// `NtCreateKey`
     NtCreateKey,
+    /// `NtCreateSection`
     NtCreateSection,
+    /// `NtCreateThread`
     NtCreateThread,
+    /// `NtCreateThreadEx`
     NtCreateThreadEx,
+    /// `NtCreateUserProcess`
     NtCreateUserProcess,
+    /// `NtDelayExecution`
     NtDelayExecution,
+    /// `NtDeleteKey`
     NtDeleteKey,
+    /// `NtDeviceIoControlFile`
     NtDeviceIoControlFile,
+    /// `NtDuplicateObject`
     NtDuplicateObject,
+    /// `NtFlushBuffersFile`
     NtFlushBuffersFile,
+    /// `NtFreeVirtualMemory`
     NtFreeVirtualMemory,
+    /// `NtFsControlFile`
     NtFsControlFile,
+    /// `NtGetContextThread`
     NtGetContextThread,
+    /// `NtMapViewOfSection`
     NtMapViewOfSection,
+    /// `NtOpenEvent`
     NtOpenEvent,
+    /// `NtOpenFile`
     NtOpenFile,
+    /// `NtOpenKey`
     NtOpenKey,
+    /// `NtOpenProcess`
     NtOpenProcess,
+    /// `NtOpenSection`
     NtOpenSection,
+    /// `NtOpenThread`
     NtOpenThread,
+    /// `NtProtectVirtualMemory`
     NtProtectVirtualMemory,
+    /// `NtQueryDirectoryFile`
     NtQueryDirectoryFile,
+    /// `NtQueryInformationFile`
     NtQueryInformationFile,
+    /// `NtQueryInformationProcess`
     NtQueryInformationProcess,
+    /// `NtQueryInformationThread`
     NtQueryInformationThread,
+    /// `NtQuerySystemInformation`
     NtQuerySystemInformation,
+    /// `NtQueryValueKey`
     NtQueryValueKey,
+    /// `NtQueryVirtualMemory`
     NtQueryVirtualMemory,
+    /// `NtReadFile`
     NtReadFile,
+    /// `NtReadVirtualMemory`
     NtReadVirtualMemory,
+    /// `NtResetEvent`
     NtResetEvent,
+    /// `NtResumeThread`
     NtResumeThread,
+    /// `NtSetContextThread`
     NtSetContextThread,
+    /// `NtSetEvent`
     NtSetEvent,
+    /// `NtSetInformationFile`
     NtSetInformationFile,
+    /// `NtSetInformationProcess`
     NtSetInformationProcess,
+    /// `NtSetValueKey`
     NtSetValueKey,
+    /// `NtSuspendThread`
     NtSuspendThread,
+    /// `NtTerminateProcess`
     NtTerminateProcess,
+    /// `NtTerminateThread`
     NtTerminateThread,
+    /// `NtUnmapViewOfSection`
     NtUnmapViewOfSection,
+    /// `NtWaitForMultipleObjects`
     NtWaitForMultipleObjects,
+    /// `NtWaitForSingleObject`
     NtWaitForSingleObject,
+    /// `NtWriteFile`
     NtWriteFile,
+    /// `NtWriteVirtualMemory`
     NtWriteVirtualMemory,
+    /// `NtYieldExecution`
     NtYieldExecution,
 }
 

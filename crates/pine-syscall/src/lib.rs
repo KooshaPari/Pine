@@ -24,7 +24,9 @@ impl SyscallHandler for LinuxSyscallHandler {
 /// Error returned when a syscall translation fails.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SyscallError {
+    /// `UnknownSyscall`
     UnknownSyscall(u64),
+    /// `InvalidArgument`
     InvalidArgument,
 }
 
@@ -42,316 +44,627 @@ impl std::error::Error for SyscallError {}
 /// Named identifier for a Linux syscall.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SyscallName {
+    /// `Read`
     Read,
+    /// `Write`
     Write,
+    /// `Open`
     Open,
+    /// `Close`
     Close,
+    /// `Stat`
     Stat,
+    /// `Fstat`
     Fstat,
+    /// `Lstat`
     Lstat,
+    /// `Poll`
     Poll,
+    /// `Lseek`
     Lseek,
+    /// `Mmap`
     Mmap,
+    /// `Mprotect`
     Mprotect,
+    /// `Munmap`
     Munmap,
+    /// `Brk`
     Brk,
+    /// `RtSigaction`
     RtSigaction,
+    /// `RtSigprocmask`
     RtSigprocmask,
+    /// `RtSigreturn`
     RtSigreturn,
+    /// `Ioctl`
     Ioctl,
+    /// `Pread64`
     Pread64,
+    /// `Pwrite64`
     Pwrite64,
+    /// `Readv`
     Readv,
+    /// `Writev`
     Writev,
+    /// `Access`
     Access,
+    /// `Pipe`
     Pipe,
+    /// `Select`
     Select,
+    /// `SchedYield`
     SchedYield,
+    /// `Mremap`
     Mremap,
+    /// `Msync`
     Msync,
+    /// `Mincore`
     Mincore,
+    /// `Madvise`
     Madvise,
+    /// `Shmget`
     Shmget,
+    /// `Shmat`
     Shmat,
+    /// `Shmctl`
     Shmctl,
+    /// `Dup`
     Dup,
+    /// `Dup2`
     Dup2,
+    /// `Pause`
     Pause,
+    /// `Nanosleep`
     Nanosleep,
+    /// `Getitimer`
     Getitimer,
+    /// `Alarm`
     Alarm,
+    /// `Setitimer`
     Setitimer,
+    /// `Getpid`
     Getpid,
+    /// `Sendfile`
     Sendfile,
+    /// `Socket`
     Socket,
+    /// `Connect`
     Connect,
+    /// `Accept`
     Accept,
+    /// `Sendto`
     Sendto,
+    /// `Recvfrom`
     Recvfrom,
+    /// `Sendmsg`
     Sendmsg,
+    /// `Recvmsg`
     Recvmsg,
+    /// `Shutdown`
     Shutdown,
+    /// `Bind`
     Bind,
+    /// `Listen`
     Listen,
+    /// `Getsockname`
     Getsockname,
+    /// `Getpeername`
     Getpeername,
+    /// `Socketpair`
     Socketpair,
+    /// `Setsockopt`
     Setsockopt,
+    /// `Getsockopt`
     Getsockopt,
+    /// `Clone`
     Clone,
+    /// `Fork`
     Fork,
+    /// `Vfork`
     Vfork,
+    /// `Execve`
     Execve,
+    /// `Exit`
     Exit,
+    /// `Wait4`
     Wait4,
+    /// `Kill`
     Kill,
+    /// `Uname`
     Uname,
+    /// `Semget`
     Semget,
+    /// `Semop`
     Semop,
+    /// `Semctl`
     Semctl,
+    /// `Shmdt`
     Shmdt,
+    /// `Msgget`
     Msgget,
+    /// `Msgsnd`
     Msgsnd,
+    /// `Msgrcv`
     Msgrcv,
+    /// `Msgctl`
     Msgctl,
+    /// `Fcntl`
     Fcntl,
+    /// `Flock`
     Flock,
+    /// `Fsync`
     Fsync,
+    /// `Fdatasync`
     Fdatasync,
+    /// `Truncate`
     Truncate,
+    /// `Ftruncate`
     Ftruncate,
+    /// `Getdents`
     Getdents,
+    /// `Getcwd`
     Getcwd,
+    /// `Chdir`
     Chdir,
+    /// `Fchdir`
     Fchdir,
+    /// `Rename`
     Rename,
+    /// `Mkdir`
     Mkdir,
+    /// `Rmdir`
     Rmdir,
+    /// `Creat`
     Creat,
+    /// `Link`
     Link,
+    /// `Unlink`
     Unlink,
+    /// `Symlink`
     Symlink,
+    /// `Readlink`
     Readlink,
+    /// `Chmod`
     Chmod,
+    /// `Fchmod`
     Fchmod,
+    /// `Chown`
     Chown,
+    /// `Fchown`
     Fchown,
+    /// `Lchown`
     Lchown,
+    /// `Umask`
     Umask,
+    /// `Gettimeofday`
     Gettimeofday,
+    /// `Getrlimit`
     Getrlimit,
+    /// `Getrusage`
     Getrusage,
+    /// `Sysinfo`
     Sysinfo,
+    /// `Times`
     Times,
+    /// `Ptrace`
     Ptrace,
+    /// `Getuid`
     Getuid,
+    /// `Syslog`
     Syslog,
+    /// `Getgid`
     Getgid,
+    /// `Setuid`
     Setuid,
+    /// `Setgid`
     Setgid,
+    /// `Geteuid`
     Geteuid,
+    /// `Getegid`
     Getegid,
+    /// `Setpgid`
     Setpgid,
+    /// `Getppid`
     Getppid,
+    /// `Getpgrp`
     Getpgrp,
+    /// `Setsid`
     Setsid,
+    /// `Setreuid`
     Setreuid,
+    /// `Setregid`
     Setregid,
+    /// `Getgroups`
     Getgroups,
+    /// `Setgroups`
     Setgroups,
+    /// `Setresuid`
     Setresuid,
+    /// `Getresuid`
     Getresuid,
+    /// `Setresgid`
     Setresgid,
+    /// `Getresgid`
     Getresgid,
+    /// `Getpgid`
     Getpgid,
+    /// `Setfsuid`
     Setfsuid,
+    /// `Setfsgid`
     Setfsgid,
+    /// `Getsid`
     Getsid,
+    /// `Capget`
     Capget,
+    /// `Capset`
     Capset,
+    /// `RtSigpending`
     RtSigpending,
+    /// `RtSigtimedwait`
     RtSigtimedwait,
+    /// `RtSigqueueinfo`
     RtSigqueueinfo,
+    /// `RtSigsuspend`
     RtSigsuspend,
+    /// `Sigaltstack`
     Sigaltstack,
+    /// `Utime`
     Utime,
+    /// `Mknod`
     Mknod,
+    /// `Statfs`
     Statfs,
+    /// `Fstatfs`
     Fstatfs,
+    /// `Getpriority`
     Getpriority,
+    /// `Setpriority`
     Setpriority,
+    /// `Mlock`
     Mlock,
+    /// `Munlock`
     Munlock,
+    /// `Mlockall`
     Mlockall,
+    /// `Munlockall`
     Munlockall,
+    /// `Vhangup`
     Vhangup,
+    /// `ModifyLdt`
     ModifyLdt,
+    /// `PivotRoot`
     PivotRoot,
+    /// `Prctl`
     Prctl,
+    /// `ArchPrctl`
     ArchPrctl,
+    /// `Adjtimex`
     Adjtimex,
+    /// `Setrlimit`
     Setrlimit,
+    /// `Chroot`
     Chroot,
+    /// `Sync`
     Sync,
+    /// `Acct`
     Acct,
+    /// `Settimeofday`
     Settimeofday,
+    /// `Mount`
     Mount,
+    /// `Umount2`
     Umount2,
+    /// `Swapon`
     Swapon,
+    /// `Swapoff`
     Swapoff,
+    /// `Reboot`
     Reboot,
+    /// `Sethostname`
     Sethostname,
+    /// `Setdomainname`
     Setdomainname,
+    /// `Iopl`
     Iopl,
+    /// `Ioperm`
     Ioperm,
+    /// `Gettid`
     Gettid,
+    /// `Readahead`
     Readahead,
+    /// `Setxattr`
     Setxattr,
+    /// `Lsetxattr`
     Lsetxattr,
+    /// `Fsetxattr`
     Fsetxattr,
+    /// `Getxattr`
     Getxattr,
+    /// `Lgetxattr`
     Lgetxattr,
+    /// `Fgetxattr`
     Fgetxattr,
+    /// `Listxattr`
     Listxattr,
+    /// `Llistxattr`
     Llistxattr,
+    /// `Flistxattr`
     Flistxattr,
+    /// `Removexattr`
     Removexattr,
+    /// `Lremovexattr`
     Lremovexattr,
+    /// `Fremovexattr`
     Fremovexattr,
+    /// `Tkill`
     Tkill,
+    /// `Time`
     Time,
+    /// `Futex`
     Futex,
+    /// `SchedSetaffinity`
     SchedSetaffinity,
+    /// `SchedGetaffinity`
     SchedGetaffinity,
+    /// `SetThreadArea`
     SetThreadArea,
+    /// `IoSetup`
     IoSetup,
+    /// `IoDestroy`
     IoDestroy,
+    /// `IoGetevents`
     IoGetevents,
+    /// `IoSubmit`
     IoSubmit,
+    /// `IoCancel`
     IoCancel,
+    /// `GetThreadArea`
     GetThreadArea,
+    /// `LookupDcookie`
     LookupDcookie,
+    /// `EpollCreate`
     EpollCreate,
+    /// `RemapFilePages`
     RemapFilePages,
+    /// `Getdents64`
     Getdents64,
+    /// `SetTidAddress`
     SetTidAddress,
+    /// `RestartSyscall`
     RestartSyscall,
+    /// `Semtimedop`
     Semtimedop,
+    /// `Fadvise64`
     Fadvise64,
+    /// `TimerCreate`
     TimerCreate,
+    /// `TimerSettime`
     TimerSettime,
+    /// `TimerGettime`
     TimerGettime,
+    /// `TimerGetoverrun`
     TimerGetoverrun,
+    /// `TimerDelete`
     TimerDelete,
+    /// `ClockSettime`
     ClockSettime,
+    /// `ClockGettime`
     ClockGettime,
+    /// `ClockGetres`
     ClockGetres,
+    /// `ClockNanosleep`
     ClockNanosleep,
+    /// `ExitGroup`
     ExitGroup,
+    /// `EpollWait`
     EpollWait,
+    /// `EpollCtl`
     EpollCtl,
+    /// `Tgkill`
     Tgkill,
+    /// `Utimes`
     Utimes,
+    /// `Mbind`
     Mbind,
+    /// `SetMempolicy`
     SetMempolicy,
+    /// `GetMempolicy`
     GetMempolicy,
+    /// `MqOpen`
     MqOpen,
+    /// `MqTimedreceive`
     MqTimedreceive,
+    /// `MqTimedsend`
     MqTimedsend,
+    /// `MqNotify`
     MqNotify,
+    /// `MqGetsetattr`
     MqGetsetattr,
+    /// `KexecLoad`
     KexecLoad,
+    /// `Waitid`
     Waitid,
+    /// `AddKey`
     AddKey,
+    /// `RequestKey`
     RequestKey,
+    /// `Keyctl`
     Keyctl,
+    /// `IoprioSet`
     IoprioSet,
+    /// `IoprioGet`
     IoprioGet,
+    /// `InotifyInit`
     InotifyInit,
+    /// `InotifyAddWatch`
     InotifyAddWatch,
+    /// `InotifyRmWatch`
     InotifyRmWatch,
+    /// `MigratePages`
     MigratePages,
+    /// `Openat`
     Openat,
+    /// `Mkdirat`
     Mkdirat,
+    /// `Mknodat`
     Mknodat,
+    /// `Fchownat`
     Fchownat,
+    /// `Futimesat`
     Futimesat,
+    /// `Newfstatat`
     Newfstatat,
+    /// `Unlinkat`
     Unlinkat,
+    /// `Renameat`
     Renameat,
+    /// `Linkat`
     Linkat,
+    /// `Symlinkat`
     Symlinkat,
+    /// `Readlinkat`
     Readlinkat,
+    /// `Fchmodat`
     Fchmodat,
+    /// `Faccessat`
     Faccessat,
+    /// `Pselect6`
     Pselect6,
+    /// `Ppoll`
     Ppoll,
+    /// `Unshare`
     Unshare,
+    /// `SetRobustList`
     SetRobustList,
+    /// `GetRobustList`
     GetRobustList,
+    /// `Splice`
     Splice,
+    /// `Tee`
     Tee,
+    /// `SyncFileRange`
     SyncFileRange,
+    /// `Vmsplice`
     Vmsplice,
+    /// `MovePages`
     MovePages,
+    /// `Utimensat`
     Utimensat,
+    /// `EpollPwait`
     EpollPwait,
+    /// `Signalfd`
     Signalfd,
+    /// `TimerfdCreate`
     TimerfdCreate,
+    /// `Eventfd`
     Eventfd,
+    /// `Fallocate`
     Fallocate,
+    /// `TimerfdSettime`
     TimerfdSettime,
+    /// `TimerfdGettime`
     TimerfdGettime,
+    /// `Accept4`
     Accept4,
+    /// `Signalfd4`
     Signalfd4,
+    /// `Eventfd2`
     Eventfd2,
+    /// `EpollCreate1`
     EpollCreate1,
+    /// `Dup3`
     Dup3,
+    /// `Pipe2`
     Pipe2,
+    /// `InotifyInit1`
     InotifyInit1,
+    /// `Preadv`
     Preadv,
+    /// `Pwritev`
     Pwritev,
+    /// `RtTgsigqueueinfo`
     RtTgsigqueueinfo,
+    /// `PerfEventOpen`
     PerfEventOpen,
+    /// `Recvmmsg`
     Recvmmsg,
+    /// `FanotifyInit`
     FanotifyInit,
+    /// `FanotifyMark`
     FanotifyMark,
+    /// `Prlimit64`
     Prlimit64,
+    /// `NameToHandleAt`
     NameToHandleAt,
+    /// `OpenByHandleAt`
     OpenByHandleAt,
+    /// `ClockAdjtime`
     ClockAdjtime,
+    /// `Syncfs`
     Syncfs,
+    /// `Sendmmsg`
     Sendmmsg,
+    /// `Setns`
     Setns,
+    /// `Getcpu`
     Getcpu,
+    /// `ProcessVmReadv`
     ProcessVmReadv,
+    /// `ProcessVmWritev`
     ProcessVmWritev,
+    /// `Kcmp`
     Kcmp,
+    /// `FinitModule`
     FinitModule,
+    /// `SchedSetattr`
     SchedSetattr,
+    /// `SchedGetattr`
     SchedGetattr,
+    /// `Renameat2`
     Renameat2,
+    /// `Seccomp`
     Seccomp,
+    /// `Getrandom`
     Getrandom,
+    /// `MemfdCreate`
     MemfdCreate,
+    /// `KexecFileLoad`
     KexecFileLoad,
+    /// `Bpf`
     Bpf,
+    /// `Execveat`
     Execveat,
+    /// `Userfaultfd`
     Userfaultfd,
+    /// `Membarrier`
     Membarrier,
+    /// `Mlock2`
     Mlock2,
+    /// `CopyFileRange`
     CopyFileRange,
+    /// `Preadv2`
     Preadv2,
+    /// `Pwritev2`
     Pwritev2,
+    /// `PkeyMprotect`
     PkeyMprotect,
+    /// `PkeyAlloc`
     PkeyAlloc,
+    /// `PkeyFree`
     PkeyFree,
+    /// `Statx`
     Statx,
+    /// `IoPgetevents`
     IoPgetevents,
+    /// `Rseq`
     Rseq,
+    /// `PidfdSendSignal`
     PidfdSendSignal,
+    /// `IoUringSetup`
     IoUringSetup,
+    /// `IoUringEnter`
     IoUringEnter,
+    /// `IoUringRegister`
     IoUringRegister,
 }
 

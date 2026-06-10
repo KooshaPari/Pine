@@ -1,4 +1,18 @@
 //! pine-core — Domain types and shared interfaces for Pine.
+//!
+//! This crate provides the foundational types and traits used across
+//! the Pine ecosystem.
+//!
+//! # Example
+//!
+//! ```
+//! use pine_core::types::{ProcessId, SyscallNumber};
+//!
+//! let pid = ProcessId(42);
+//! let num = SyscallNumber(0x80);
+//! ```
+
+#![warn(missing_docs)]
 
 pub mod traits;
 pub mod types;

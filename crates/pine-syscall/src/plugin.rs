@@ -367,7 +367,7 @@ impl PluginLoader {
     ///
     /// # Safety
     ///
-    /// See [`load_dynamic`].
+    /// See [`Self::load_dynamic`].
     pub unsafe fn load_directory(
         &self,
         dir: &Path,

@@ -1,7 +1,39 @@
 //! pine-loader — ELF/PE loader adapter.
+//!
+//! This crate parses ELF and PE binaries using the [`goblin`] crate
+//! and exposes structured representations of sections, symbols, and
+//! metadata.
+//!
+//! # Example
+//!
+//! ```
+//! use pine_loader::{parse_pe, parse_elf, ElfLoader};
+//! use pine_core::traits::Loader;
+//!
+//! // Use the ElfLoader trait implementation
+//! let loader = ElfLoader;
+//! let _ = loader.load("/path/to/binary.elf");
+//! ```
+
+#![warn(missing_docs)]
 
 use pine_core::traits::Loader;
 
+/// ELF binary loader.
+///
+/// Currently returns empty bytes for every path. This is a placeholder
+/// implementation that satisfies the [`Loader`] trait from `pine-core`.
+///
+/// # Example
+///
+/// ```
+/// use pine_loader::ElfLoader;
+/// use pine_core::traits::Loader;
+///
+/// let loader = ElfLoader;
+/// let bytes = loader.load("/path/to/binary.elf").unwrap();
+/// assert!(bytes.is_empty());
+/// ```
 pub struct ElfLoader;
 
 impl Loader for ElfLoader {
