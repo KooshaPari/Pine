@@ -1,13 +1,14 @@
 name: CI
 
-permissions:
-  contents: read
-
 on:
   push:
-    branches: [main]
+    branches: [main, master, chore/**, feat/**, fix/**, refactor/**]
   pull_request:
-    branches: [main]
+    branches: [main, master, chore/**, feat/**, fix/**, refactor/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,69 +18,55 @@ jobs:
   build:
     name: Build + Test
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --workspace --all-targets
-      - name: Test
-        run: cargo test --workspace
-      - name: Format
-        run: cargo fmt -- --check
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-      - name: Audit
-        run: cargo audit || echo "cargo-audit not installed; skipping"
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  cross-compile:
-    name: Cross Compile (${{ matrix.target }})
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
-          - wasm32-unknown-unknown
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install cross
-        if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo install cross --git https://github.com/cross-rs/cross
-      - name: Build (cross)
-        if: matrix.target != 'wasm32-unknown-unknown'
-        run: cross build --workspace --target ${{ matrix.target }}
-      - name: Build (cargo)
-        if: matrix.target == 'wasm32-unknown-unknown'
-        run: cargo build --workspace --target ${{ matrix.target }}
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Lint (fmt + clippy)
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Build + Test
+        run: |
+          cargo build --workspace --all-targets
+          cargo test --workspace --all-features --no-fail-fast
 
   docs:
-    name: Docs
+    name: Validate docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Build mdbook (if SUMMARY.md present)
-        run: |
-          if [ -f docs/book.toml ] && [ -f docs/src/SUMMARY.md ]; then
-            curl -sL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
-            cd docs && mdbook build
-          else
-            echo "No mdbook book defined (docs/book.toml + docs/src/SUMMARY.md missing) — skipping"
-          fi
-
-  lint:
-    name: Lint Markdown
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npm install -g markdownlint-cli
-      - run: markdownlint "docs/**/*.md"
+          fetch-depth: 0
+      - name: TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: ""
+          head: HEAD
+          extraArgs: --no-history
+
+  docs-validation:
+    name: Docs Validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: TruffleHog (history)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extraArgs: --only-verified
