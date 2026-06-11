@@ -17,12 +17,31 @@
 
 #![warn(missing_docs)]
 
+use std::fmt;
+use std::fs;
+use std::io;
+use std::path::Path;
+
 use pine_core::traits::Loader;
+
+/// Read all bytes from a path on disk.
+///
+/// This is a thin wrapper around [`std::fs::read`] that produces a
+/// [`String`] error suitable for the [`pine_core::traits::Loader`]
+/// trait. Use [`read_bytes_into`] when you want a richer error type.
+pub fn read_bytes(path: &str) -> Result<Vec<u8>, String> {
+    fs::read(Path::new(path)).map_err(|e| format!("read {path}: {e}"))
+}
+
+/// Same as [`read_bytes`] but returns the typed [`io::Error`] directly.
+pub fn read_bytes_into(path: &str) -> io::Result<Vec<u8>> {
+    fs::read(Path::new(path))
+}
 
 /// ELF binary loader.
 ///
-/// Currently returns empty bytes for every path. This is a placeholder
-/// implementation that satisfies the [`Loader`] trait from `pine-core`.
+/// Reads the file at the given path and returns its bytes, or a stringified
+/// I/O error. The struct is a zero-sized type — instantiation is free.
 ///
 /// # Example
 ///
@@ -31,20 +50,46 @@ use pine_core::traits::Loader;
 /// use pine_core::traits::Loader;
 ///
 /// let loader = ElfLoader;
-/// let bytes = loader.load("/path/to/binary.elf").unwrap();
-/// assert!(bytes.is_empty());
+/// // Loading a missing path is an error (not `Ok(vec![])`):
+/// assert!(loader.load("/nonexistent/path/that/does/not/exist.elf").is_err());
 /// ```
 pub struct ElfLoader;
 
 impl Loader for ElfLoader {
-    fn load(&self, _path: &str) -> Result<Vec<u8>, String> {
-        Ok(vec![])
+    /// Read the file at `path` and return its bytes.
+    ///
+    /// Returns `Err(msg)` if the file does not exist, the process lacks
+    /// permission to read it, or any other I/O error occurs.
+    fn load(&self, path: &str) -> Result<Vec<u8>, String> {
+        read_bytes(path)
     }
 }
 
-// ========== PE Loader ==========
+/// PE binary loader.
+///
+/// Reads the file at the given path and returns its bytes, or a stringified
+/// I/O error. Mirrors [`ElfLoader`] but is exposed as a distinct type so
+/// downstream code can pattern-match on the format when parsing.
+///
+/// # Example
+///
+/// ```
+/// use pine_loader::PeLoader;
+/// use pine_core::traits::Loader;
+///
+/// let loader = PeLoader;
+/// assert!(loader.load("/nonexistent/path/that/does/not/exist.exe").is_err());
+/// ```
+pub struct PeLoader;
 
-use std::fmt;
+impl Loader for PeLoader {
+    /// Read the file at `path` and return its bytes.
+    fn load(&self, path: &str) -> Result<Vec<u8>, String> {
+        read_bytes(path)
+    }
+}
+
+// ========== Typed errors ==========
 
 /// Error type for loader operations.
 #[derive(Debug)]
@@ -416,17 +461,40 @@ mod tests {
     }
 
     #[test]
-    fn elf_loader_implements_loader() {
+    fn elf_loader_errors_for_missing_file() {
         let loader = ElfLoader;
-        let result = loader.load("/nonexistent");
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_empty());
+        let result = loader.load("/nonexistent/path/that/does/not/exist.elf");
+        assert!(result.is_err(), "loading a missing file must be an Err, got Ok");
+        let msg = result.unwrap_err();
+        assert!(
+            msg.contains("/nonexistent/path/that/does/not/exist.elf"),
+            "error must include the path that failed: {msg}"
+        );
     }
 
     #[test]
-    fn elf_loader_loads_empty_for_missing_file() {
+    fn pe_loader_errors_for_missing_file() {
+        let loader = PeLoader;
+        let result = loader.load("/nonexistent/path/that/does/not/exist.exe");
+        assert!(result.is_err(), "loading a missing file must be an Err, got Ok");
+    }
+
+    #[test]
+    fn elf_loader_round_trip() {
+        // Build a minimal ELF file in /tmp and confirm we can read it back.
+        let dir = std::env::temp_dir();
+        let path = dir.join("pine_loader_roundtrip_test.elf");
+        let payload: Vec<u8> = (0u8..=255).cycle().take(1024).collect();
+        std::fs::write(&path, &payload).expect("write tmp ELF");
+
         let loader = ElfLoader;
-        let bytes = loader.load("/tmp/does_not_exist.elf").unwrap();
-        assert_eq!(bytes, vec![]);
+        let read = loader.load(path.to_str().unwrap()).expect("load tmp ELF");
+        assert_eq!(read, payload, "loader must return exact file contents");
+
+        // PeLoader should behave identically for the read path.
+        let read2 = PeLoader.load(path.to_str().unwrap()).expect("PeLoader load");
+        assert_eq!(read2, payload);
+
+        std::fs::remove_file(&path).ok();
     }
 }
