@@ -1,25 +1,34 @@
 name: TruffleHog Secrets Scan
-permissions:
-  contents: read
-  id-token: write
 
 on:
   push:
+    branches: [main, master, chore/**, feat/**, fix/**, refactor/**]
   pull_request:
+    branches: [main, master, chore/**, feat/**, fix/**, refactor/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   trufflehog:
-    name: TruffleHog scan
-    runs-on: ubuntu-latest
+    name: TruffleHog filesystem scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: trufflesecurity/trufflehog@d411fff7b8879a62509f3fa98c07f247ac089a51 # v3.95.5
+
+      - name: TruffleHog (filesystem mode — works on first commit)
+        uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --only-verified --fail --no-update --exclude-paths ./.trufflehogignore
+          # No base/head args → filesystem scan mode, works on first commit
+          # and subsequent commits alike.
+          extraArgs: --no-history --only-verified --fail --exclude-paths ./.trufflehogignore
