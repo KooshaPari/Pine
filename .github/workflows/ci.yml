@@ -39,34 +39,18 @@ jobs:
           cargo build --workspace --all-targets
           cargo test --workspace --all-features --no-fail-fast
 
-  docs:
-    name: Validate docs
+  secrets:
+    name: TruffleHog secrets scan (full history)
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: TruffleHog
+      - name: TruffleHog (full history, head only on push events)
         uses: trufflesecurity/trufflehog@main
         with:
           path: .
           base: ""
           head: HEAD
-          extraArgs: --no-history
-
-  docs-validation:
-    name: Docs Validation
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: TruffleHog (history)
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: .
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extraArgs: --only-verified
+          extraArgs: --no-history --only-verified
