@@ -44,3 +44,11 @@ Phenotype needs application compatibility. Users will want to run Windows apps (
 - Runtime: Go (orchestration, lifecycle management)
 - Agents: Python/TypeScript (testing harness)
 <!-- ci-refresh: 2026-06-10T09:24:35Z -->
+
+## Documentation
+
+This repository includes the following cross-cutting documents:
+
+- [`AGENTS.md`](AGENTS.md) — operating instructions for AI agents and human contributors
+- [`docs/`](docs/) — design notes, ADRs, and supporting documentation (see [`docs/index.md`](docs/index.md))
+
