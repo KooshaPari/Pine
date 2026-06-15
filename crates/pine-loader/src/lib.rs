@@ -464,7 +464,10 @@ mod tests {
     fn elf_loader_errors_for_missing_file() {
         let loader = ElfLoader;
         let result = loader.load("/nonexistent/path/that/does/not/exist.elf");
-        assert!(result.is_err(), "loading a missing file must be an Err, got Ok");
+        assert!(
+            result.is_err(),
+            "loading a missing file must be an Err, got Ok"
+        );
         let msg = result.unwrap_err();
         assert!(
             msg.contains("/nonexistent/path/that/does/not/exist.elf"),
@@ -476,7 +479,10 @@ mod tests {
     fn pe_loader_errors_for_missing_file() {
         let loader = PeLoader;
         let result = loader.load("/nonexistent/path/that/does/not/exist.exe");
-        assert!(result.is_err(), "loading a missing file must be an Err, got Ok");
+        assert!(
+            result.is_err(),
+            "loading a missing file must be an Err, got Ok"
+        );
     }
 
     #[test]
@@ -492,7 +498,9 @@ mod tests {
         assert_eq!(read, payload, "loader must return exact file contents");
 
         // PeLoader should behave identically for the read path.
-        let read2 = PeLoader.load(path.to_str().unwrap()).expect("PeLoader load");
+        let read2 = PeLoader
+            .load(path.to_str().unwrap())
+            .expect("PeLoader load");
         assert_eq!(read2, payload);
 
         std::fs::remove_file(&path).ok();
