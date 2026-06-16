@@ -21,12 +21,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: TruffleHog (filesystem mode — works on first commit)
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@3fc0c2aa6648d54242e4af6fbfde0701796e4fb0
         with:
           path: ./
           # No base/head args → filesystem scan mode, works on first commit
