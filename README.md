@@ -19,6 +19,10 @@
 > human operator. Bug reports and contributions are still welcome, but please
 > expect AI-generated code, comments, and documentation throughout.
 <!-- AI-DD-META:END -->
+> **Work-state:** pre-alpha — `[###-------] 25%`
+>
+> Wine-equivalent compatibility layer for Phenotype; foundation bootstrapped 2026-04-30. Research + architecture phase. Pending: Windows syscall translation layer, macOS/Linux adapter scaffolding, nanovms integration.
+
 # Pine — Wine-Equivalent for Phenotype
 
 **Pine** is a compatibility layer enabling Windows, macOS, and Linux applications to run on Phenotype-native infrastructure. Like Wine translates Windows syscalls to POSIX, Pine translates applications into Phenotype execution environments.
