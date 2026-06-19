@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: TruffleHog (full history, head only on push events)
-        uses: trufflesecurity/trufflehog@3fc0c2aa6648d54242e4af6fbfde0701796e4fb0
+        uses: trufflesecurity/trufflehog@9b6b5326bfe25dbd856eccc8a8275eb5dea7bd52
         with:
           path: .
           base: ""
