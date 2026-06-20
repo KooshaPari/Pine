@@ -11,4 +11,6 @@
 //! phenotype-voxel/src/ports/ (Rust port).
 
 pub mod assets;
+pub mod resolve;
+pub mod section;
 pub mod serialization;
