@@ -41,13 +41,13 @@ jobs:
           publish_results: true
       # Upload the results as a SARIF file to the "Code Scanning" tab.
       - name: "Upload artifact"
-        uses: actions/upload-artifact@97a0f4bc7fdc10fd5533b6296167a1ce6ab2742d # v3.1.6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: SARIF file
           path: results.sarif
           if-no-files-found: error
       - name: "Upload to code-scanning"
         if: github.event_name != 'pull_request'
-        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+        uses: github/codeql-action/upload-sarif@1a818fd5f97ed0ee9a823421bd5b171add01227f # v4.36.2
         with:
           sarif_file: results.sarif
