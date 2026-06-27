@@ -19,6 +19,7 @@
 > human operator. Bug reports and contributions are still welcome, but please
 > expect AI-generated code, comments, and documentation throughout.
 <!-- AI-DD-META:END -->
+
 > **Work-state:** pre-alpha — `[###-------] 25%`
 >
 > Wine-equivalent compatibility layer for Phenotype; foundation bootstrapped 2026-04-30. Research + architecture phase. Pending: Windows syscall translation layer, macOS/Linux adapter scaffolding, nanovms integration.
@@ -26,6 +27,21 @@
 # Pine — Wine-Equivalent for Phenotype
 
 **Pine** is a compatibility layer enabling Windows, macOS, and Linux applications to run on Phenotype-native infrastructure. Like Wine translates Windows syscalls to POSIX, Pine translates applications into Phenotype execution environments.
+
+## Quickstart
+
+```bash
+git clone https://github.com/KooshaPari/Pine.git
+cd Pine
+cargo build --workspace --all-targets
+cargo test  --workspace --all-features --no-fail-fast
+```
+
+The workspace builds five crates (`pine-core`, `pine-loader`, `pine-syscall`,
+`pine-compat`, `pine-nvms`) on stable Rust (2021 edition). For the full
+prerequisites, layout walkthrough, and docs-site workflow, see
+[`docs/src/getting-started.md`](docs/src/getting-started.md) and
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## PINE where PINE is an enhancemnt over WINE similar to Proton and Re-eng of Crossover  + Adaptation to Phenotype OS targets
 ## Status
@@ -76,5 +92,4 @@ This repository includes the following cross-cutting documents:
 
 - [`AGENTS.md`](AGENTS.md) — operating instructions for AI agents and human contributors
 - [`docs/`](docs/) — design notes, ADRs, and supporting documentation (see [`docs/index.md`](docs/index.md))
-
 
