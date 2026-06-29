@@ -41,6 +41,11 @@ jobs:
           cargo build --workspace --all-targets
           cargo test --workspace --all-features --no-fail-fast
 
+      - name: Cargo deny (supply-chain check)
+        run: |
+          cargo install cargo-deny --locked
+          cargo deny --all-features check
+
   secrets:
     name: TruffleHog secrets scan (full history)
     runs-on: ubuntu-24.04
