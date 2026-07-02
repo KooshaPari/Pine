@@ -486,6 +486,40 @@ mod tests {
     }
 
     #[test]
+    fn parse_pe_empty_bytes() {
+        assert!(parse_pe(b"").is_err());
+    }
+
+    #[test]
+    fn parse_elf_empty_bytes() {
+        assert!(parse_elf(b"").is_err());
+    }
+
+    #[test]
+    fn invalid_pe_data_is_loader_error() {
+        let result =
+            parse_pe(b"not a pe\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        // Must surface as a LoaderError, not a panic
+        assert!(matches!(
+            err,
+            LoaderError::Goblin(_) | LoaderError::InvalidPE(_)
+        ));
+    }
+
+    #[test]
+    fn invalid_elf_data_is_loader_error() {
+        let result = parse_elf(b"not an elf\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(
+            err,
+            LoaderError::Goblin(_) | LoaderError::InvalidPE(_)
+        ));
+    }
+
+    #[test]
     fn elf_loader_round_trip() {
         // Build a minimal ELF file in /tmp and confirm we can read it back.
         let dir = std::env::temp_dir();
@@ -504,5 +538,25 @@ mod tests {
         assert_eq!(read2, payload);
 
         std::fs::remove_file(&path).ok();
+    }
+}
+
+#[cfg(test)]
+mod proptests {
+    use crate::{parse_elf, parse_pe};
+    use proptest::prelude::*;
+
+    proptest! {
+        /// parse_pe must never panic on any input (returns Err or Ok).
+        #[test]
+        fn parse_pe_never_panics(bytes in proptest::collection::vec(any::<u8>(), 0..1024)) {
+            let _ = parse_pe(&bytes);
+        }
+
+        /// parse_elf must never panic on any input (returns Err or Ok).
+        #[test]
+        fn parse_elf_never_panics(bytes in proptest::collection::vec(any::<u8>(), 0..1024)) {
+            let _ = parse_elf(&bytes);
+        }
     }
 }
