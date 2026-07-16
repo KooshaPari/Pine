@@ -36,10 +36,40 @@ jobs:
           cargo fmt --all -- --check
           cargo clippy --workspace --all-targets --all-features -- -D warnings
 
+      - name: Deny (advisories + licenses + bans)
+        uses: EmbarkStudios/cargo-deny-action@376f34b27ce1472f6558b00e5fa8f7e4cae27a18
+        with:
+          command: check advisories licenses bans sources
+
       - name: Build + Test
         run: |
           cargo build --workspace --all-targets
           cargo test --workspace --all-features --no-fail-fast
+
+  coverage:
+    name: Coverage (cargo-llvm-cov)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
+        with:
+          toolchain: stable
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@e1ca417f8cda3d6ca4ff2188b2dc41a7817b4f0b
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
+
+      - name: Coverage gate (fail under 70%)
+        run: |
+          cargo llvm-cov --workspace --lcov --output-path lcov.info --fail-under-lines 70
 
   secrets:
     name: TruffleHog secrets scan (full history)

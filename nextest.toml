@@ -1,0 +1,6 @@
+[profile.ci]
+retry = 2
+slow-timeout = "120s"
+
+[output]
+junit = { path = "target/nextest/junit.xml" }

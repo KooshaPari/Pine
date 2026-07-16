@@ -1,0 +1,22 @@
+{
+  "name": "Pine Rust Development",
+  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  "features": {
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "stable",
+      "profile": "complete"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "vadimcn.vscode-lldb",
+        "davidanson.vscode-markdownlint"
+      ]
+    }
+  },
+  "postCreateCommand": "cargo install cargo-nextest --locked && cargo install cargo-deny --locked && cargo install cargo-llvm-cov --locked",
+  "remoteUser": "codespace"
+}
