@@ -40,7 +40,7 @@ jobs:
       typescript: ${{ steps.detect.outputs.typescript }}
       has_ci_lint: ${{ steps.detect.outputs.rust_ci || steps.detect.outputs.python_ci || steps.detect.outputs.go_ci || steps.detect.outputs.ts_ci }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: detect
         run: |
           # Smart-discover: only set true if relevant tooling files exist
@@ -86,7 +86,7 @@ jobs:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
@@ -120,7 +120,7 @@ jobs:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -154,7 +154,7 @@ jobs:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
@@ -172,7 +172,7 @@ jobs:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -225,7 +225,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -249,7 +249,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
@@ -265,7 +265,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run trunk only if configured
         run: |
           if [ -f "trunk.yaml" ] && [ -d ".trunk" ]; then
