@@ -2,6 +2,10 @@
 name = "pine-nvms"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "NVMS runtime adapter for Pine"
+repository = "https://github.com/KooshaPari/Pine"
+readme = "../../README.md"
 
 [dependencies]
-pine-core = { path = "../pine-core" }
+pine-core = { path = "../pine-core", version = "0.1.0" }

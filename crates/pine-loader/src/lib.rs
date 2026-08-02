@@ -1,3 +1,7 @@
+// FR: FR-1
+// FR: FR-2
+// FR: FR-3
+// FR: FR-4
 //! pine-loader — ELF/PE loader adapter.
 //!
 //! This crate parses ELF and PE binaries using the [`goblin`] crate

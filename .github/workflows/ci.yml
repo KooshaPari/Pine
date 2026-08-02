@@ -17,7 +17,9 @@ concurrency:
 jobs:
   trace-gate:
     name: FR Coverage Gate
-    uses: KooshaPari/phenotype-pm-core/.github/workflows/trace-gate.yml@main
+    uses: KooshaPari/phenotype-pm-core/.github/workflows/trace-gate.yml@721c481fcd54740aa5d50d7ebfe40a9b5102906e
+    with:
+      src: crates
 
   build:
     name: Build + Test
@@ -38,12 +40,62 @@ jobs:
       - name: Lint (fmt + clippy)
         run: |
           cargo fmt --all -- --check
-          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
       - name: Build + Test
         run: |
-          cargo build --workspace --all-targets
-          cargo test --workspace --all-features --no-fail-fast
+          cargo build --workspace --all-targets --all-features --locked
+          cargo test --workspace --all-features --no-fail-fast --locked
+
+      - name: Package + consumer smoke
+        run: |
+          cargo package --workspace --locked --no-verify
+          cargo check --manifest-path smoke/consumer/Cargo.toml --locked
+
+  coverage:
+    name: Line coverage >= 85%
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
+        with:
+          toolchain: stable
+          components: llvm-tools-preview
+
+      - name: Install coverage gate
+        run: cargo install cargo-llvm-cov --version 0.8.7 --locked
+
+      - name: Enforce line coverage
+        run: >
+          cargo llvm-cov --workspace --all-features --locked
+          --fail-under-lines 85
+
+  security:
+    name: Dependency policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
+        with:
+          toolchain: stable
+
+      - name: Install security gates
+        run: |
+          cargo install cargo-audit --version 0.22.0 --locked
+          cargo install cargo-deny --version 0.19.0 --locked
+
+      - name: Audit advisories and dependency policy
+        run: |
+          cargo audit --deny warnings
+          cargo deny check
 
   secrets:
     name: TruffleHog secrets scan (full history)

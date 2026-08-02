@@ -2,7 +2,11 @@
 name = "pine-loader"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "PE and ELF loading adapters for the Pine compatibility runtime"
+repository = "https://github.com/KooshaPari/Pine"
+readme = "../../README.md"
 
 [dependencies]
-pine-core = { path = "../pine-core" }
+pine-core = { path = "../pine-core", version = "0.1.0" }
 goblin = "0.10.7"

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // SPDX-FileCopyrightText: 2026 KooshaPari <kooshapari@gmail.com>
+// FR: FR-8
 
 //! Serialization port for Pine process state.
 //!

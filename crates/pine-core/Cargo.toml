@@ -2,6 +2,10 @@
 name = "pine-core"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Core types and ports for the Pine compatibility runtime"
+repository = "https://github.com/KooshaPari/Pine"
+readme = "../../README.md"
 
 [dependencies]
 thiserror = "1"

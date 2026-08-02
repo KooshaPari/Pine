@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // SPDX-FileCopyrightText: 2026 KooshaPari <kooshapari@gmail.com>
+// FR: FR-7
 
 //! PE section reader port for Pine processes.
 //!

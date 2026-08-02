@@ -1,46 +1,72 @@
-# FR (Functional Requirement) Coverage Gate Configuration
-#
-# Enforces traceability between code changes and documented functional requirements.
-# See: https://github.com/KooshaPari/phenotype-pm-core
-#
-# This configuration file specifies:
-# - Source directories to scan for FR decorators / annotations
-# - Minimum coverage thresholds
-# - Allowed exceptions and exemptions
+# Strict manifest consumed by phenotype-pm-core's trace-gate.
+# Every requirement must have at least one `// FR: <id>` source annotation.
 
-[gate]
-# Source directories to scan (relative to repo root)
-src_dirs = ["src"]
+[[requirement]]
+fr_id = "FR-1"
+description = "Binary byte loading reports missing inputs"
+spec_id = "docs/specs/SPEC.md#fr-1"
 
-# Minimum percentage of code that must be traced to FRs (0-100)
-min_coverage = 75
+[[requirement]]
+fr_id = "FR-2"
+description = "ELF and PE loaders return exact file bytes"
+spec_id = "docs/specs/SPEC.md#fr-2"
 
-# Fail on any uncovered lines, or warn and continue
-strict_mode = true
+[[requirement]]
+fr_id = "FR-3"
+description = "PE parsing emits normalized metadata"
+spec_id = "docs/specs/SPEC.md#fr-3"
 
-# Optional: list of exemption paths (glob patterns, relative to src/)
-exemptions = [
-  "*/tests/*",
-  "*/mock/*",
-  "**/generated/*"
-]
+[[requirement]]
+fr_id = "FR-4"
+description = "ELF parsing emits normalized metadata"
+spec_id = "docs/specs/SPEC.md#fr-4"
 
-[decorators]
-# Supported FR decorator formats:
-# - Rust: #[fr::trace("FR-123")], #[fr::implements("FR-123")]
-# - File: @fr FR-123, @implements FR-123
+[[requirement]]
+fr_id = "FR-5"
+description = "Asset registry enforces registration and lookup contracts"
+spec_id = "docs/specs/SPEC.md#fr-5"
 
-# Link to Tracera instance for FR validation (optional)
-tracera_url = "https://tracera.phenotype.space"
+[[requirement]]
+fr_id = "FR-6"
+description = "Symbol resolution handles exact, scoped, and ambiguous lookups"
+spec_id = "docs/specs/SPEC.md#fr-6"
 
-# Report configuration
-[report]
-# Generate HTML report (optional)
-output_format = "text"
-output_file = "target/fr-coverage.txt"
+[[requirement]]
+fr_id = "FR-7"
+description = "Section reads enforce virtual bounds"
+spec_id = "docs/specs/SPEC.md#fr-7"
 
-# Fail the gate if coverage drops below threshold
-fail_on_regression = true
+[[requirement]]
+fr_id = "FR-8"
+description = "Process snapshots serialize and hydrate"
+spec_id = "docs/specs/SPEC.md#fr-8"
 
-# Previous coverage baseline (set after first successful run)
-# coverage_baseline = 85.0
+[[requirement]]
+fr_id = "FR-9"
+description = "Runtime adapters support zero-cost construction"
+spec_id = "docs/specs/SPEC.md#fr-9"
+
+[[requirement]]
+fr_id = "FR-10"
+description = "Linux syscall numbers map to structured names"
+spec_id = "docs/specs/SPEC.md#fr-10"
+
+[[requirement]]
+fr_id = "FR-11"
+description = "Linux constants remain coherent with lookup tables"
+spec_id = "docs/specs/SPEC.md#fr-11"
+
+[[requirement]]
+fr_id = "FR-12"
+description = "Windows constants map to documented NT syscalls"
+spec_id = "docs/specs/SPEC.md#fr-12"
+
+[[requirement]]
+fr_id = "FR-13"
+description = "Plugin registry routes through plugins and base translators"
+spec_id = "docs/specs/SPEC.md#fr-13"
+
+[[requirement]]
+fr_id = "FR-14"
+description = "Core identifiers remain strongly typed"
+spec_id = "docs/specs/SPEC.md#fr-14"
